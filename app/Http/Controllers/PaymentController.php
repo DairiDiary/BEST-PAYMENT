@@ -14,8 +14,14 @@ class PaymentController extends Controller
 {
     public function index(Payment $payment)
     {
-        return Inertia::render("bestpayment/index",["payments" => $payment->get()]);
+        $user = Auth::user();
+        $registered = $user->mypayments()->pluck('payment_id')->toArray();
+        return Inertia::render("bestpayment/index", [
+            "payments"   => $payment->get(),
+            "registered" => $registered,
+        ]);
     }
+
     public function show(Payment $payment)
     {
         return Inertia::render("bestpayment/Show", ["payment" => $payment]);
@@ -25,55 +31,52 @@ class PaymentController extends Controller
     public function best(Request $request)
     {
         $keyword = $request->input('searchQuery');
-        $payments = Payment::get();
         $onlymypayment = $request->input('onlymypayment');
+        $user = Auth::user();
         
+        $registeredPaymentIds = mypayment::where('user_id', $user->id)->pluck('payment_id')->toArray();
+    
+        $query = Payment::query();
+    
+        if ($keyword) {
+            $store = Store::where('name', 'like', '%' . $keyword . '%')->first();
+            if ($store) {
+                $query->whereHas('paymentStores', function ($q) use ($store) {
+                    $q->where('store_id', $store->id);
+                });
+            } else {
+                $query->where('id', -1);
+            }
+        }
+    
         if ($onlymypayment) {
-            $user = Auth::user();
-            $mypayment = $user->mypayments->pluck('payment_id')->toArray();
-        
-            if ($keyword) {
-                $store = Store::where('name', 'like', '%' . $keyword . '%')->first();
-                if ($store){
-                    $payments = Payment::whereHas('paymentStores', function($query) use ($store, $mypayment) {
-                        $query->where('store_id', $store->id)
-                              ->whereIn('id', $mypayment);
-                    })->get();
-                } else {
-                    $payments = collect();
-                }
-            } else {
-                $payments = Payment::whereIn('id', $mypayment)->get();
-            }
+            $query->whereIn('id', $registeredPaymentIds);
         }
-        
-        else {
-            if ($keyword) {
-                $store = Store::where('name', 'like', '%' . $keyword . '%')->first();
-                if ($store) {
-                    $payments = Payment::whereHas('paymentStores', function ($query) use ($store) {
-                        $query->where('store_id', $store->id);
-                    })->get();
-                } else {
-                    $payments = collect();
-                }
-            } else {
-                $payments = Payment::get();
-            }
-        }
-
+    
+        $payments = $query->get();
+    
         return Inertia::render('bestpayment/best', [
             'payments' => $payments,
-            'keyword' => $request->keyword,
+            'keyword' => $keyword,
             'onlymypayment' => $onlymypayment
         ]);
     }
+
     
     public function mypayment(Request $request, mypayment $mypayment, Payment $payment)
     {
         $mypayment->payment_id = $payment->id;
-        $mypayment->user_id = Auth::id();
+        $mypayment->user_id    = Auth::id();
         $mypayment->save();
-        return redirect("/index/" . $payment->id);
+    
+        $user = Auth::user();
+        $registered = $user->mypayments()->pluck('payment_id')->toArray();
+    
+        return Inertia::render('bestpayment/index', [
+            "payments"   => Payment::all(),
+            "registered" => $registered,
+            "message"    => "登録が完了しました",
+        ]);
     }
+
 }

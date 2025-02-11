@@ -40,7 +40,7 @@ Route::middleware('auth')->group(function () {
 
 Route::group(["middleware" => ["auth"]], function() {
     
-    Route::get("/index", [PaymentController::class, "index"]);
+    Route::get("/index", [PaymentController::class, "index"])->name('index');
     Route::get('/index/{payment}', [PaymentController::class, "show"]);
     Route::post('/index/{payment}', [PaymentController::class, "mypayment"])->name('mypayment');
     
