@@ -8,34 +8,27 @@ import DialogActions from '@mui/material/DialogActions';
 import { Inertia } from '@inertiajs/inertia';
 
 const Index = (props) => {
-    // サーバー側から渡された支払い一覧と、登録済みの支払いID配列を利用
     const { payments, registered, message } = props;
 
-    // ポップアップ用の状態
     const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedPayment, setSelectedPayment] = useState(null);
 
-    // 登録確認ダイアログを開く
     const openDialog = (payment) => {
         setSelectedPayment(payment);
         setDialogOpen(true);
     };
 
-    // ダイアログを閉じる
     const closeDialog = () => {
         setDialogOpen(false);
         setSelectedPayment(null);
     };
 
-    // 確認ボタン押下時に登録処理を実行
     const confirmRegistration = () => {
         if (!selectedPayment) return;
 
         Inertia.post(`/index/${selectedPayment.id}`, {}, {
-            // 登録後はコントローラ側から再描画された index ページが返されるので、
-            // ボタン表示も props（registered）に基づいて更新されます。
+            
             onSuccess: () => {
-                // ※追加のクライアント側処理が必要な場合はここに記述
             },
             onError: (errors) => {
                 console.error("登録エラー:", errors);

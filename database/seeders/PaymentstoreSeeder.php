@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\store;
-use App\Models\payment;
+use App\Models\Payment;
 
 class PaymentstoreSeeder extends Seeder
 {
@@ -17,23 +16,42 @@ class PaymentstoreSeeder extends Seeder
      */
     public function run()
     {
-        $store1 = Store::where('name', 'イオン')->first();
-        $store2 = Store::where('name', 'ローソン')->first();
-    
-        $payment1 = Payment::where('name', 'イオンカード')->first();
-        $payment2 = Payment::where('name', '三井住友カード')->first();
-        
-        if (!$store1 || !$store2) {
-            dd('Stores not found:', $store1, $store2);
+        // 店舗と決済方法の組み合わせを定義
+        $storePaymentPairs = [
+            ['store_name' => 'イオン', 'payment_name' => 'イオンカード'],
+            ['store_name' => 'ローソン', 'payment_name' => '三井住友カード'],
+            ['store_name' => 'セブンイレブン', 'payment_name' => '三井住友カード'],
+            ['store_name' => 'まいばすけっと', 'payment_name' => 'イオンカード'],
+            ['store_name' => 'ライフ', 'payment_name' => '楽天ペイ'],
+            ['store_name' => '成城石井', 'payment_name' => 'エポスカード'],
+            ['store_name' => '西友', 'payment_name' => 'エポスカード'],
+            ['store_name' => 'ヤオコー', 'payment_name' => 'エポスカード'],
+            ['store_name' => 'ファミリーマート', 'payment_name' => 'FamiPay'],
+            ['store_name' => 'ロピア', 'payment_name' => '現金'],
+
+        ];
+
+        $insertData = [];
+
+        foreach ($storePaymentPairs as $pair) {
+            $store = Store::where('name', $pair['store_name'])->first();
+            $payment = Payment::where('name', $pair['payment_name'])->first();
+
+            if (!$store) {
+                abort(404, "Store not found: {$pair['store_name']}");
+            }
+            if (!$payment) {
+                abort(404, "Payment not found: {$pair['payment_name']}");
+            }
+
+            $insertData[] = [
+                'payment_id' => $payment->id,
+                'store_id' => $store->id,
+                'priority' => 1,
+            ];
         }
 
-        if (!$payment1 || !$payment2) {
-            dd('Payments not found:', $payment1, $payment2);
-        }
-    
-        DB::table('payment_stores')->insert([
-            ['payment_id' => $payment1->id, 'store_id' => $store1->id, 'priority' => 1],
-            ['payment_id' => $payment2->id, 'store_id' => $store2->id, 'priority' => 1],
-        ]);
+        // データを一括挿入
+        DB::table('payment_stores')->insert($insertData);
     }
 }

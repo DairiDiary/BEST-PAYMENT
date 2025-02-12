@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Models\Store;
+use App\Models\store;
 
 class StoreSeeder extends Seeder
 {
@@ -25,11 +25,11 @@ class StoreSeeder extends Seeder
                 'image_path' => 'null'
         ]);
         DB::table('stores')->insert([
-                'name' => 'ヨークベニマル',
+                'name' => 'ロピア',
                 'image_path' => 'null'
         ]);
         DB::table('stores')->insert([
-                'name' => '西友',
+                'name' => 'まいばすけっと',
                 'image_path' => 'null'
         ]);
         DB::table('stores')->insert([
