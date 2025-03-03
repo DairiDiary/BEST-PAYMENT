@@ -22,13 +22,13 @@ export default function Authenticated({ auth, header, children }) {
 
                             <div className="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                                 <NavLink href={route('dashboard')} active={route().current('dashboard')}>
-                                    Dashboard
+                                    ホーム
                                 </NavLink>
                                 <NavLink href="/index" active={window.location.pathname === '/index'}>
-                                    Index
+                                    登録
                                 </NavLink>
                                 <NavLink href="/best" active={window.location.pathname === '/best'}>
-                                    Best
+                                    検索
                                 </NavLink>
                             </div>
                         </div>
