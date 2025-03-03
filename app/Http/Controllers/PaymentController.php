@@ -61,7 +61,6 @@ class PaymentController extends Controller
             'onlymypayment' => $onlymypayment
         ]);
     }
-
     
     public function mypayment(Request $request, mypayment $mypayment, Payment $payment)
     {
@@ -76,6 +75,19 @@ class PaymentController extends Controller
             "payments"   => Payment::all(),
             "registered" => $registered,
             "message"    => "登録が完了しました",
+        ]);
+    }
+    
+    public function dashboard()
+    {
+        $user = Auth::user();
+        $registered = $user->mypayments()->pluck('payment_id')->toArray();
+        // ここで全件の決済方法を取得
+        $payments = \App\Models\Payment::all();
+    
+        return Inertia::render('Dashboard', [
+             'payments'   => $payments,
+             'registered' => $registered,
         ]);
     }
 
