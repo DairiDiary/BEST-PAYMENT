@@ -19,7 +19,6 @@ export default function Dashboard({ auth, errors, payments = [], registered = []
       <AuthenticatedLayout auth={auth} errors={errors}>
         <Head title="Dashboard" />
         
-        {/* ダークモード切り替えスイッチ */}
         <div style={{ position: 'absolute', top: 10, right: 60 }}>
           <FormControlLabel
             control={
@@ -68,7 +67,7 @@ export default function Dashboard({ auth, errors, payments = [], registered = []
                 {registeredPayments.map(payment => (
                   <Card key={payment.id} className="shadow-md" style={{ backgroundColor: darkMode ? darkTheme.palette.background.paper : lightTheme.palette.background.paper }}>
                     {payment.image_path && (
-                      <img src={payment.image_path} alt={payment.name} className="h-32 w-full object-cover" />
+                      <img src={payment.image_path} alt={payment.name} className="h-32 w-full object-contain" />
                     )}
                     <CardContent className="text-center">
                       <Typography variant="h6" className="font-bold" style={{ color: darkMode ? darkTheme.palette.text.primary : lightTheme.palette.text.primary }}>

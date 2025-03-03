@@ -33,27 +33,34 @@ class PaymentController extends Controller
         $keyword = $request->input('searchQuery');
         $onlymypayment = $request->input('onlymypayment');
         $user = Auth::user();
-        
-        $registeredPaymentIds = mypayment::where('user_id', $user->id)->pluck('payment_id')->toArray();
     
-        $query = Payment::query();
+        $registeredPaymentIds = mypayment::where('user_id', $user->id)
+                                    ->pluck('payment_id')
+                                    ->toArray();
     
         if ($keyword) {
             $store = Store::where('name', 'like', '%' . $keyword . '%')->first();
             if ($store) {
-                $query->whereHas('paymentStores', function ($q) use ($store) {
-                    $q->where('store_id', $store->id);
-                });
+                $query = Payment::select('payments.*')
+                    ->join('payment_stores', 'payments.id', '=', 'payment_stores.payment_id')
+                    ->where('payment_stores.store_id', $store->id)
+                    ->orderBy('payment_stores.priority', 'asc');
             } else {
-                $query->where('id', -1);
+                return Inertia::render('bestpayment/best', [
+                    'payments' => collect(),
+                    'keyword' => $keyword,
+                    'onlymypayment' => $onlymypayment
+                ]);
             }
+        } else {
+            $query = Payment::query();
         }
     
         if ($onlymypayment) {
-            $query->whereIn('id', $registeredPaymentIds);
+            $query->whereIn('payments.id', $registeredPaymentIds);
         }
     
-        $payments = $query->get();
+        $payments = $query->limit(3)->get();
     
         return Inertia::render('bestpayment/best', [
             'payments' => $payments,
@@ -61,6 +68,7 @@ class PaymentController extends Controller
             'onlymypayment' => $onlymypayment
         ]);
     }
+
     
     public function mypayment(Request $request, mypayment $mypayment, Payment $payment)
     {
@@ -82,7 +90,7 @@ class PaymentController extends Controller
     {
         $user = Auth::user();
         $registered = $user->mypayments()->pluck('payment_id')->toArray();
-        // ここで全件の決済方法を取得
+
         $payments = \App\Models\Payment::all();
     
         return Inertia::render('Dashboard', [
